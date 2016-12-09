@@ -16,11 +16,9 @@ struct Required : PresencePolicy
     struct Apply
     {
         Apply() = delete;
-        explicit Apply(ValueType&& val) : value(std::move(val)) {}
-        explicit Apply(const ValueType& val) : value(val) {}
+        explicit Apply(bool) {}
+
         bool initialized() const { return true; }
-        const ValueType& get() const { return value; }
-        ValueType value;
     };
 };
 
@@ -30,11 +28,12 @@ struct Optional : PresencePolicy
     struct Apply
     {
         Apply() = default;
-        explicit Apply(ValueType&& val) : value(std::move(val)) {}
-        explicit Apply(const ValueType& val) : value(val) {}
-        bool initialized() const { return static_cast<bool>(value); }
-        const ValueType& get() const { return *value; }
-        boost::optional<ValueType> value;
+        explicit Apply(bool i) : init(i) {}
+
+        bool initialized() const { return static_cast<bool>(init); }
+
+    private:
+        bool init = false;
     };
 };
 
