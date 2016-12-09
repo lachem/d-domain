@@ -82,5 +82,44 @@ TEST_F(BasicTypeShould, beMovable)
     EXPECT_EQ("text4", req.get());
 }
 
+TEST_F(BasicTypeShould, beMutable)
+{
+    struct SomeTypeTag; 
+    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional>;
+    using ReqSomeType = BasicType<SomeTypeTag, std::string, Mutable, Required>;
+
+    std::string text1("text1");
+    std::string text2("text2");
+    
+    OptSomeType opt(std::move(text1));
+    ReqSomeType req(std::move(text2));
+    
+    EXPECT_EQ("text1", opt.get());
+    EXPECT_EQ("text2", req.get());
+
+    opt.set(std::string("text3"));
+    req.set(std::string("text4"));
+
+    EXPECT_EQ("text3", opt.get());
+    EXPECT_EQ("text4", req.get());
+}
+
+TEST_F(BasicTypeShould, handleMutableAndOptionalTogeather)
+{
+    struct SomeTypeTag; 
+    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional, Mutable>;
+
+    OptSomeType opt;
+    opt.set("text1");
+
+    EXPECT_EQ("text1", opt.get());
+    EXPECT_TRUE(opt.initialized()); 
+
+    // The below code checks for immutability
+    // using OptImmutable = BasicType<SomeTypeTag, std::string, Optional, Immutable>;
+    // OptImmutable imm;
+    // imm.set("text1");
+}
+
 } // namespace 
 
