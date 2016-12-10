@@ -14,7 +14,7 @@ struct BasicTypeShould : Test
 
 TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
 {
-    struct SomeTypeTag; using SomeType = BasicType<SomeTypeTag, int>;
+    struct SomeTypeTag{}; using SomeType = BasicType<int, Mixin<SomeTypeTag>>;
 
     SomeType instance;
     EXPECT_FALSE(static_cast<bool>(instance));
@@ -22,7 +22,7 @@ TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
 
 TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
 {
-    struct SomeTypeTag; using SomeType = BasicType<SomeTypeTag, int, Optional>;
+    struct SomeTypeTag{}; using SomeType = BasicType<int, Optional, Mixin<SomeTypeTag>>;
 
     SomeType instance(1);
     EXPECT_EQ(1, instance.get());
@@ -31,7 +31,7 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
 
 TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
 {
-    struct SomeTypeTag; using SomeType = BasicType<SomeTypeTag, int, Required>;
+    struct SomeTypeTag{}; using SomeType = BasicType<int, Required, Mixin<SomeTypeTag>>;
 
     SomeType instance(1);
     EXPECT_EQ(1, instance.get());
@@ -40,9 +40,9 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
 
 TEST_F(BasicTypeShould, beCopyConstructible)
 {
-    struct SomeTypeTag; 
-    using OptSomeType = BasicType<SomeTypeTag, int, Optional>;
-    using ReqSomeType = BasicType<SomeTypeTag, int, Required>;
+    struct SomeTypeTag{}; 
+    using OptSomeType = BasicType<int, Optional, Mixin<SomeTypeTag>>;
+    using ReqSomeType = BasicType<int, Required, Mixin<SomeTypeTag>>;
 
     OptSomeType opt = OptSomeType(10);
     ReqSomeType req = ReqSomeType(21);
@@ -59,9 +59,8 @@ TEST_F(BasicTypeShould, beCopyConstructible)
 
 TEST_F(BasicTypeShould, beMovable)
 {
-    struct SomeTypeTag; 
-    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional>;
-    using ReqSomeType = BasicType<SomeTypeTag, std::string, Required>;
+    using OptSomeType = BasicType<std::string, Optional>;
+    using ReqSomeType = BasicType<std::string, Required>;
 
     std::string text1("text1");
     std::string text2("text2");
@@ -84,9 +83,8 @@ TEST_F(BasicTypeShould, beMovable)
 
 TEST_F(BasicTypeShould, beMutable)
 {
-    struct SomeTypeTag; 
-    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional>;
-    using ReqSomeType = BasicType<SomeTypeTag, std::string, Mutable, Required>;
+    using OptSomeType = BasicType<std::string, Optional>;
+    using ReqSomeType = BasicType<std::string, Mutable, Required>;
 
     std::string text1("text1");
     std::string text2("text2");
@@ -106,8 +104,7 @@ TEST_F(BasicTypeShould, beMutable)
 
 TEST_F(BasicTypeShould, handleMutableAndOptionalTogeather)
 {
-    struct SomeTypeTag; 
-    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional, Mutable>;
+    using OptSomeType = BasicType<std::string, Optional, Mutable>;
 
     OptSomeType opt;
     opt.set("text1");
@@ -128,8 +125,7 @@ TEST_F(BasicTypeShould, supportStaticMixins)
         static const char* name() { return "some name"; }
     };
 
-    struct SomeTypeTag; 
-    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional, Mutable, Mixin<Name>>;
+    using OptSomeType = BasicType<std::string, Optional, Mutable, Mixin<Name>>;
 
     OptSomeType opt("text1");
 
@@ -148,8 +144,7 @@ TEST_F(BasicTypeShould, supportRuntimeMixins)
         std::string text;
     };
 
-    struct SomeTypeTag; 
-    using ReqSomeType = BasicType<SomeTypeTag, double, Required, Immutable, Mixin<Name>>;
+    using ReqSomeType = BasicType<double, Required, Immutable, Mixin<Name>>;
 
     ReqSomeType req(15.79, Name("test"));
 
@@ -177,8 +172,7 @@ TEST_F(BasicTypeShould, supportMultipleRuntimeMixins)
         int value;
     };
 
-    struct SomeTypeTag; 
-    using ReqSomeType = BasicType<SomeTypeTag, double, Required, Mutable, Mixin<Mode, Name>>;
+    using ReqSomeType = BasicType<double, Required, Mutable, Mixin<Mode, Name>>;
 
     ReqSomeType req(15.79, Mode(20), Name("test"));
 
