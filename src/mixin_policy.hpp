@@ -5,22 +5,28 @@
 
 //std
 #include <utility>
+#include <type_traits>
 
 namespace di
 {
 
 struct MixinPolicy {};
 
-template<typename Subject>
+template<typename... Subject>
 struct Mixin : MixinPolicy
 {
     template<typename Type>
-    struct Apply : public Subject
+    struct Apply : public Subject...
     {
+        template<typename T>
+        using RemoveQualifiers = typename std::decay<T>::type;
+
         Apply() = default;
 
-        template<typename U>
-        explicit Apply(U&& param) : Subject(std::forward<U>(param)) {}
+        template<typename... T>
+        explicit Apply(T&&... param) 
+            : RemoveQualifiers<T>(std::forward<T>(param))... 
+        {}
     };
 };
 

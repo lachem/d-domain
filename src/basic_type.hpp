@@ -34,16 +34,16 @@ struct BasicType
         : presence_policy(true)
         , value(val) 
     {}
-    template<typename T>
-    explicit BasicType(value_type&& val, T&& mixin) 
+    template<typename M1, typename... M>
+    explicit BasicType(value_type&& val, M1&& mixin1, M&&... mixins) 
         : presence_policy(true)
-        , mixin_policy(std::forward<T>(mixin))
+        , mixin_policy(std::forward<M1>(mixin1), std::forward<M>(mixins)...)
         , value(std::move(val)) 
     {}
-    template<typename T>
-    explicit BasicType(const value_type& val, T&& mixin)
+    template<typename M1, typename... M>
+    explicit BasicType(const value_type& val, M1&& mixin1, M&&... mixins)
         : presence_policy(true)
-        , mixin_policy(std::forward<T>(mixin))
+        , mixin_policy(std::forward<M1>(mixin1), std::forward<M>(mixins)...)
         , value(val) 
     {}
 

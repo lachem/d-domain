@@ -157,5 +157,35 @@ TEST_F(BasicTypeShould, supportRuntimeMixins)
     EXPECT_STREQ("test",  req.name());
 }
 
+TEST_F(BasicTypeShould, supportMultipleRuntimeMixins)
+{
+    struct Name
+    {
+        explicit Name(const std::string& name) : text(name) {}
+        const char* name() { return text.c_str(); }
+
+    private:
+        std::string text;
+    };
+
+    struct Mode
+    {
+        explicit Mode(int p) : value(p) {}
+        int mode() { return value; }
+
+    private:
+        int value;
+    };
+
+    struct SomeTypeTag; 
+    using ReqSomeType = BasicType<SomeTypeTag, double, Required, Mutable, Mixin<Mode, Name>>;
+
+    ReqSomeType req(15.79, Mode(20), Name("test"));
+
+    EXPECT_EQ(15.79, req.get());
+    EXPECT_EQ(20,  req.mode());
+    EXPECT_STREQ("test",  req.name());
+}
+
 } // namespace 
 
