@@ -121,5 +121,41 @@ TEST_F(BasicTypeShould, handleMutableAndOptionalTogeather)
     // imm.set("text1");
 }
 
+TEST_F(BasicTypeShould, supportStaticMixins)
+{
+    struct Name
+    {
+        static const char* name() { return "some name"; }
+    };
+
+    struct SomeTypeTag; 
+    using OptSomeType = BasicType<SomeTypeTag, std::string, Optional, Mutable, Mixin<Name>>;
+
+    OptSomeType opt("text1");
+
+    EXPECT_EQ("text1", opt.get());
+    EXPECT_STREQ("some name", opt.name());
+}
+
+TEST_F(BasicTypeShould, supportRuntimeMixins)
+{
+    struct Name
+    {
+        explicit Name(const std::string& name) : text(name) {}
+        const char* name() { return text.c_str(); }
+
+    private:
+        std::string text;
+    };
+
+    struct SomeTypeTag; 
+    using ReqSomeType = BasicType<SomeTypeTag, double, Required, Immutable, Mixin<Name>>;
+
+    ReqSomeType req(15.79, Name("test"));
+
+    EXPECT_EQ(15.79, req.get());
+    EXPECT_STREQ("test",  req.name());
+}
+
 } // namespace 
 
