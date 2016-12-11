@@ -1,6 +1,12 @@
+//          Copyright Adam Lach 2016
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #pragma once
 
 //local
+#include "value_container.hpp"
 #include "mixin_policy.hpp"
 #include "access_policy.hpp"
 #include "presence_policy.hpp"
@@ -12,28 +18,16 @@
 #include <utility>
 
 namespace di {
-namespace detail {
-
-template<typename ValueType>
-struct ValueContainer
-{
-    ValueContainer() = default;
-    ValueContainer(ValueType&& val) : value(std::move(val)) {}
-    ValueContainer(const ValueType& val) : value(val) {}
-    ValueType value;
-};
-
-} // namespace detail
 
 template<typename ValueType, typename... Policies>
 struct BasicType
-    : private detail::ValueContainer<ValueType>
+    : private ValueContainer<ValueType>
     , private GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>
     , private GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>
     , public  GetPolicy<MixinPolicy, Policies...>::template Apply<ValueType>
 {
     using value_type = ValueType;
-    using value_container = detail::ValueContainer<ValueType>;
+    using value_container = ValueContainer<ValueType>;
     using presence_policy = typename GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>;
     using access_policy = typename GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>;
     using mixin_policy = typename GetPolicy<MixinPolicy, Policies...>::template Apply<ValueType>;
