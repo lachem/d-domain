@@ -5,37 +5,31 @@
 
 #pragma once
 
-//local
-#include "policy.hpp"
-
 namespace di
 {
 
-struct AccessPolicy {};
-struct Mutable : AccessPolicy
+template<typename Type>
+struct Mutable
 {
-    template<typename Type>
-    struct Apply
-    {
-        template<typename T>
-        void operator()(const T&) {}
-    };
+    Mutable() = default;
+
+    template<typename T>
+    Mutable(T&&) {}
+
+    template<typename T>
+    void set(const T&) {}
 };
 
-struct Immutable : AccessPolicy
-{   
-    template<typename Type>
-    struct Apply
-    {
-        template<typename T>
-        void operator()(const T&) { static_assert(!sizeof(T), "Cannot modify immutable object"); }
-    };
-};
-
-template<>
-struct StaticDefault<AccessPolicy>
+template<typename Type>
+struct Immutable
 {
-    using type = Mutable;
+    Immutable() = default;
+
+    template<typename T>
+    Immutable(T&&) {}
+
+    template<typename T>
+    void set(const T&) { static_assert(!sizeof(T), "Cannot modify immutable object"); }
 };
 
 } // namespace di

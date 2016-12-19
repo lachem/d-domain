@@ -19,59 +19,34 @@
 
 namespace di {
 
-template<typename ValueType, typename... Policies>
+template<typename ValueType, template <typename> class... Policies>
 struct BasicType
     : private ValueContainer<ValueType>
-    , private GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>
-    , private GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>
-    , public  GetPolicy<MixinPolicy, Policies...>::template Apply<BasicType<ValueType, Policies...>>
+    , public MixinPolicy<Policies...>::template Apply<BasicType<ValueType, Policies...>>
 {
     using value_type = ValueType;
     using value_container = ValueContainer<ValueType>;
-    using presence_policy = typename GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>;
-    using access_policy = typename GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>;
-    using mixin_policy = typename GetPolicy<MixinPolicy, Policies...>::template Apply<BasicType<ValueType, Policies...>>;
+    using mixin_policy = typename MixinPolicy<Policies...>::template Apply<BasicType<ValueType, Policies...>>;
 
     BasicType() = default;
-    explicit BasicType(value_type&& val) 
-        : value_container(std::move(val)) 
-        , presence_policy(true)
-    {}
     explicit BasicType(const value_type& val)
-        : value_container(val) 
-        , presence_policy(true)
+        : value_container(val)
+        , mixin_policy(val)
     {}
-    template<typename M1, typename... M>
-    explicit BasicType(value_type&& val, M1&& mixin1, M&&... mixins) 
-        : value_container(std::move(val)) 
-        , presence_policy(true)
-        , mixin_policy(std::forward<M1>(mixin1), std::forward<M>(mixins)...)
+    explicit BasicType(value_type&& val)
+        : value_container(std::move(val))
+        , mixin_policy(val)
     {}
-    template<typename M1, typename... M>
-    explicit BasicType(const value_type& val, M1&& mixin1, M&&... mixins)
-        : value_container(val) 
-        , presence_policy(true)
-        , mixin_policy(std::forward<M1>(mixin1), std::forward<M>(mixins)...)
-    {}
-
-    using presence_policy::initialized;
-   
-    explicit operator bool() const 
-    { 
-        return initialized(); 
-    }
 
     template<typename T>
-    void set(T&& val) 
+    void set(T&& val)
     {
-        presence_policy::operator()(val);
-        access_policy::operator()(val);
         value_container::value = val;
     }
 
-    const value_type& get() const 
-    { 
-        return value_container::value; 
+    const value_type& get() const
+    {
+        return value_container::value;
     }
 };
 

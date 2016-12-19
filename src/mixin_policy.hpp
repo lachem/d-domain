@@ -5,9 +5,6 @@
 
 #pragma once
 
-//local
-#include "policy.hpp"
-
 //std
 #include <utility>
 #include <type_traits>
@@ -15,22 +12,40 @@
 namespace di
 {
 
-struct MixinPolicy {};
+template<template <typename> class T, typename Base>
+struct Mixin : public T<Base>
+{
+private:
+    template<typename U>
+    using catch_constructible = typename std::enable_if<std::is_constructible<T<Base>, U>::value>::type*;
+
+    template<typename U>
+    using catch_non_constructible = typename std::enable_if<!std::is_constructible<T<Base>, U>::value>::type*;
+
+public:
+    Mixin() = default;
+
+    template<typename U>
+    explicit Mixin(U&& value, catch_constructible<U> = nullptr)
+        : T<Base>(std::forward<U>(value))
+    {}
+
+    template<typename U>
+    explicit Mixin(U&&, catch_non_constructible<U> = nullptr)
+    {}
+};
 
 template<template <typename> class... Subject>
-struct Mixin : MixinPolicy
+struct MixinPolicy
 {
     template<typename Type>
-    struct Apply : public Subject<Apply<Type>>...
+    struct Apply : public Mixin<Subject, Apply<Type>>...
     {
-        template<typename T>
-        using RemoveQualifiers = typename std::decay<T>::type;
-
         Apply() = default;
 
-        template<typename... T>
-        explicit Apply(T&&... param) 
-            : RemoveQualifiers<T>(std::forward<T>(param))... 
+        template<typename T>
+        explicit Apply(const T& value)
+            : Mixin<Subject, Apply<Type>>(value)...
         {}
 
         template<typename T>
@@ -39,20 +54,6 @@ struct Mixin : MixinPolicy
         template<typename T>
         static const Type* self(const T* object) { return static_cast<const Type*>(object); }
     };
-};
-
-struct NullMixin : MixinPolicy
-{
-    template<typename Type>
-    struct Apply
-    {
-    };
-};
-
-template<>
-struct StaticDefault<MixinPolicy>
-{
-    using type = NullMixin;
 };
 
 } // namespace di

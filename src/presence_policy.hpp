@@ -5,53 +5,38 @@
 
 #pragma once
 
-//local
-#include "policy.hpp"
-
-//boost
-#include <boost/optional.hpp>
-
 namespace di
 {
 
-struct PresencePolicy {};
-struct Required : PresencePolicy
+template<typename Type>
+struct Required
 {
-    template<typename Type>
-    struct Apply
-    {
-        Apply() = delete;
-        explicit Apply(bool) {}
-        
-        template<typename T> 
-        void operator()(const T&) {}
+    Required() = delete;
 
-        bool initialized() const { return true; }
-    };
+    template<typename T>
+    explicit Required(T&&) {}
+
+    template<typename T>
+    void set(const T&) {}
+
+    bool initialized() const { return true; }
 };
 
-struct Optional : PresencePolicy
-{   
-    template<typename Type>
-    struct Apply
-    {
-        Apply() = default;
-        explicit Apply(bool i) : init(i) {}
-
-        template<typename T> 
-        void operator()(const T&) { init = true; }
-
-        bool initialized() const { return static_cast<bool>(init); }
-
-    private:
-        bool init = false;
-    };
-};
-
-template<>
-struct StaticDefault<PresencePolicy>
+template<typename Type>
+struct Optional
 {
-    using type = Optional;
+    Optional() = default;
+
+    template<typename T>
+    explicit Optional(T&&) : init(true) {}
+
+    template<typename T>
+    void set(const T&) { init = true; }
+
+    bool initialized() const { return static_cast<bool>(init); }
+
+private:
+    bool init = false;
 };
 
 } // namespace di
