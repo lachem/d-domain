@@ -5,8 +5,7 @@
 
 #pragma once
 
-namespace di
-{
+namespace di {
 
 template<typename Type>
 struct Mutable

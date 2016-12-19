@@ -5,8 +5,7 @@
 
 #pragma once
 
-namespace di
-{
+namespace di {
 
 template<typename Type>
 struct Required
@@ -19,6 +18,7 @@ struct Required
     template<typename T>
     void set(const T&) {}
 
+    bool empty() const { return false; }
     bool initialized() const { return true; }
 };
 
@@ -33,7 +33,8 @@ struct Optional
     template<typename T>
     void set(const T&) { init = true; }
 
-    bool initialized() const { return static_cast<bool>(init); }
+    bool empty() const { return !init; }
+    bool initialized() const { return init; }
 
 private:
     bool init = false;
