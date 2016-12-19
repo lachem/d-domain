@@ -35,7 +35,7 @@ struct BasicType
     {}
     explicit BasicType(value_type&& val)
         : value_container(std::move(val))
-        , mixin_policy(val)
+        , mixin_policy(ValueContainer<ValueType>::value)
     {}
 
     template<typename T>
