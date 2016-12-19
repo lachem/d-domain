@@ -159,5 +159,31 @@ TEST_F(BasicTypeShould, supportValueBasedMixins)
     EXPECT_EQ("prefix", opt.prefix());
 }
 
+template<typename T>
+struct CachedPrefix
+{
+    explicit CachedPrefix(const std::string& v)
+        : value(v.substr(0,6))
+    {}
+
+    const std::string& prefix() const
+    {
+        return value;
+    }
+
+private:
+    std::string value;
+};
+
+TEST_F(BasicTypeShould, supportCachedMixins)
+{
+    using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
+
+    OptSomeType opt("prefix_text");
+
+    EXPECT_EQ("prefix_text", opt.get());
+    EXPECT_EQ("prefix", opt.prefix());
+}
+
 } // namespace
 
