@@ -9,3 +9,5 @@ Makefile
 .kdev4/*
 dconfig.kdev4
 
+**/*.log
+
