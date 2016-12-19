@@ -17,11 +17,11 @@ namespace di
 
 struct MixinPolicy {};
 
-template<typename... Subject>
+template<template <typename> class... Subject>
 struct Mixin : MixinPolicy
 {
     template<typename Type>
-    struct Apply : public Subject...
+    struct Apply : public Subject<Apply<Type>>...
     {
         template<typename T>
         using RemoveQualifiers = typename std::decay<T>::type;
@@ -32,6 +32,12 @@ struct Mixin : MixinPolicy
         explicit Apply(T&&... param) 
             : RemoveQualifiers<T>(std::forward<T>(param))... 
         {}
+
+        template<typename T>
+        static Type* self(T* object) { return static_cast<Type*>(object); }
+
+        template<typename T>
+        static const Type* self(const T* object) { return static_cast<const Type*>(object); }
     };
 };
 

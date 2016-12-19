@@ -24,13 +24,13 @@ struct BasicType
     : private ValueContainer<ValueType>
     , private GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>
     , private GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>
-    , public  GetPolicy<MixinPolicy, Policies...>::template Apply<ValueType>
+    , public  GetPolicy<MixinPolicy, Policies...>::template Apply<BasicType<ValueType, Policies...>>
 {
     using value_type = ValueType;
     using value_container = ValueContainer<ValueType>;
     using presence_policy = typename GetPolicy<PresencePolicy, Policies...>::template Apply<ValueType>;
     using access_policy = typename GetPolicy<AccessPolicy, Policies...>::template Apply<ValueType>;
-    using mixin_policy = typename GetPolicy<MixinPolicy, Policies...>::template Apply<ValueType>;
+    using mixin_policy = typename GetPolicy<MixinPolicy, Policies...>::template Apply<BasicType<ValueType, Policies...>>;
 
     BasicType() = default;
     explicit BasicType(value_type&& val) 

@@ -19,9 +19,12 @@ struct BasicTypeShould : Test
 {
 };
 
+template<typename T> 
+struct SomeTypeTag {};
+
 TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
 {
-    struct SomeTypeTag{}; using SomeType = BasicType<int, Mixin<SomeTypeTag>>;
+    using SomeType = BasicType<int, Mixin<SomeTypeTag>>;
 
     SomeType instance;
     EXPECT_FALSE(static_cast<bool>(instance));
@@ -29,7 +32,7 @@ TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
 
 TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
 {
-    struct SomeTypeTag{}; using SomeType = BasicType<int, Optional, Mixin<SomeTypeTag>>;
+    using SomeType = BasicType<int, Optional, Mixin<SomeTypeTag>>;
 
     SomeType instance(1);
     EXPECT_EQ(1, instance.get());
@@ -38,7 +41,7 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
 
 TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
 {
-    struct SomeTypeTag{}; using SomeType = BasicType<int, Required, Mixin<SomeTypeTag>>;
+    using SomeType = BasicType<int, Required, Mixin<SomeTypeTag>>;
 
     SomeType instance(1);
     EXPECT_EQ(1, instance.get());
@@ -46,8 +49,7 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
 } 
 
 TEST_F(BasicTypeShould, beCopyConstructible)
-{
-    struct SomeTypeTag{}; 
+{ 
     using OptSomeType = BasicType<int, Optional, Mixin<SomeTypeTag>>;
     using ReqSomeType = BasicType<int, Required, Mixin<SomeTypeTag>>;
 
@@ -125,13 +127,14 @@ TEST_F(BasicTypeShould, handleMutableAndOptionalTogeather)
     // imm.set("text1");
 }
 
+template<typename T>
+struct Name
+{
+    static const char* name() { return "some name"; }
+};
+
 TEST_F(BasicTypeShould, supportStaticMixins)
 {
-    struct Name
-    {
-        static const char* name() { return "some name"; }
-    };
-
     using OptSomeType = BasicType<std::string, Optional, Mutable, Mixin<Name>>;
 
     OptSomeType opt("text1");
@@ -140,52 +143,23 @@ TEST_F(BasicTypeShould, supportStaticMixins)
     EXPECT_STREQ("some name", opt.name());
 }
 
-TEST_F(BasicTypeShould, supportRuntimeMixins)
+template<typename T>
+struct Prefix
 {
-    struct Name
-    {
-        explicit Name(const std::string& name) : text(name) {}
-        const char* name() { return text.c_str(); }
+    std::string prefix() const 
+    { 
+        return T::self(this)->get().substr(0,6);
+    }
+};
 
-    private:
-        std::string text;
-    };
-
-    using ReqSomeType = BasicType<double, Required, Immutable, Mixin<Name>>;
-
-    ReqSomeType req(15.79, Name("test"));
-
-    EXPECT_EQ(15.79, req.get());
-    EXPECT_STREQ("test",  req.name());
-}
-
-TEST_F(BasicTypeShould, supportMultipleRuntimeMixins)
+TEST_F(BasicTypeShould, supportValueBasedMixins)
 {
-    struct Name
-    {
-        explicit Name(const std::string& name) : text(name) {}
-        const char* name() { return text.c_str(); }
+    using OptSomeType = BasicType<std::string, Mixin<Prefix>>;
 
-    private:
-        std::string text;
-    };
+    OptSomeType opt("prefix_text");
 
-    struct Mode
-    {
-        explicit Mode(int p) : value(p) {}
-        int mode() { return value; }
-
-    private:
-        int value;
-    };
-
-    using ReqSomeType = BasicType<double, Required, Mutable, Mixin<Mode, Name>>;
-
-    ReqSomeType req(15.79, Mode(20), Name("test"));
-
-    EXPECT_EQ(15.79, req.get());
-    EXPECT_EQ(20,  req.mode());
-    EXPECT_STREQ("test",  req.name());
+    EXPECT_EQ("prefix_text", opt.get());
+    EXPECT_EQ("prefix", opt.prefix());
 }
 
 } // namespace 
