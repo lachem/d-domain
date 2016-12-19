@@ -171,6 +171,11 @@ struct CachedPrefix
         return value;
     }
 
+    void set(const std::string& v)
+    {
+        value = v.substr(0,6);
+    }
+
 private:
     std::string value;
 };
@@ -180,9 +185,12 @@ TEST_F(BasicTypeShould, supportCachedMixins)
     using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
 
     OptSomeType opt("prefix_text");
-
     EXPECT_EQ("prefix_text", opt.get());
     EXPECT_EQ("prefix", opt.prefix());
+
+    opt.set("pref12_sth");
+    EXPECT_EQ("pref12_sth", opt.get());
+    EXPECT_EQ("pref12", opt.prefix());
 }
 
 } // namespace
