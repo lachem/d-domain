@@ -6,7 +6,6 @@
 #pragma once
 
 //local
-#include "value_container.hpp"
 #include "mixin_policy.hpp"
 #include "access_mixin.hpp"
 #include "presence_mixin.hpp"
@@ -18,14 +17,26 @@
 #include <utility>
 
 namespace di {
+namespace detail {
+
+template<typename ValueType>
+struct ValueContainer
+{
+    ValueContainer() = default;
+    ValueContainer(ValueType&& val) : value(std::move(val)) {}
+    ValueContainer(const ValueType& val) : value(val) {}
+    ValueType value;
+};
+
+} // namespace detail
 
 template<typename ValueType, typename... Policies>
 struct BasicType
-    : private ValueContainer<ValueType>
+    : private detail::ValueContainer<ValueType>
     , public MixinPolicy<BasicType<ValueType, Policies...>, Policies...>
 {
     using value_type = ValueType;
-    using value_container = ValueContainer<ValueType>;
+    using value_container = detail::ValueContainer<ValueType>;
     using mixin_policy = MixinPolicy<BasicType<ValueType, Policies...>, Policies...>;
 
     BasicType() = default;

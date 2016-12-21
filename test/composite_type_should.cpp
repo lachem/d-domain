@@ -48,7 +48,7 @@ TEST(CompositeTypeShould, allowModificationOfMutableElements)
 }
 
 template<typename T>
-struct Hashable
+struct BasicHash
 {
     size_t hash() const
     {
@@ -56,15 +56,25 @@ struct Hashable
     }
 };
 
+template<typename T>
+struct CompositeHash
+{
+    size_t hash() const
+    {
+        return 42;
+    }
+};
+
 TEST(CompositeTypeShould, supportUniversalMixins)
 {
-    using Name     = BasicType<std::string, NameTag, Hashable<di::_>>;
-    using Property = BasicType<uint64_t, PropertyTag, Hashable<di::_>>;
-    using NamedProperty = CompositeType<Name, Property>;
+    using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
+    using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
+    using NamedProperty = CompositeType<Name, Property, CompositeHash<di::_>>;
 
     NamedProperty property(Name("SomeName"), Property(2010));
     EXPECT_EQ("SomeName", property.get<Name>().get());
     EXPECT_EQ(2010, property.get<Property>().get());
+    //EXPECT_EQ(42, property.hash());
 }
 
 } // namespace
