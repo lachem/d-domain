@@ -7,7 +7,6 @@
 
 namespace di {
 
-template<typename Type>
 struct Mutable
 {
     Mutable() = default;
@@ -19,7 +18,6 @@ struct Mutable
     void set(const T&) {}
 };
 
-template<typename Type>
 struct Immutable
 {
     Immutable() = default;

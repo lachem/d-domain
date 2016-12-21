@@ -10,6 +10,10 @@
 #include <type_traits>
 
 namespace di {
+
+//placeholder
+struct _ {};
+
 namespace detail {
 
 template <typename C, typename F, typename = void>
@@ -25,22 +29,22 @@ struct is_set_available<C, R(A...),
 
 } // namespace detail
 
-template<template <typename> class T, typename Base>
-struct MixinType : public T<Base>
+template<typename T>
+struct MixinType : public T
 {
 private:
     template<typename U>
-    using catch_constructible = typename std::enable_if<std::is_constructible<T<Base>, U>::value>::type*;
+    using catch_constructible = typename std::enable_if<std::is_constructible<T, U>::value>::type*;
 
     template<typename U>
-    using catch_non_constructible = typename std::enable_if<!std::is_constructible<T<Base>, U>::value>::type*;
+    using catch_non_constructible = typename std::enable_if<!std::is_constructible<T, U>::value>::type*;
 
 public:
     MixinType() = default;
 
     template<typename U>
     explicit MixinType(U&& value, catch_constructible<U> = nullptr)
-        : T<Base>(std::forward<U>(value))
+        : T(std::forward<U>(value))
     {}
 
     template<typename U>
@@ -50,14 +54,14 @@ public:
     template<typename U>
     void set(const U& value)
     {
-        doSet(value, detail::is_set_available<T<Base>, void(U)>());
+        doSet(value, detail::is_set_available<T, void(U)>());
     }
 
 private:
     template<typename U>
     void doSet(const U& value, std::true_type)
     {
-        T<Base>::set(value);
+        T::set(value);
     }
 
     template<typename U>
@@ -67,23 +71,35 @@ private:
     }
 };
 
-template<template <typename> class... Subject>
+template<typename Subject, typename Base>
+struct ApplyMixin
+{
+    using type = MixinType<Subject>;
+};
+
+template<template <typename> class Subject, typename Base>
+struct ApplyMixin<Subject<_>, Base>
+{
+    using type = MixinType<Subject<Base>>;
+};
+
+template<class... Subject>
 struct Mixin
 {
     template<typename Type>
-    struct Apply : public MixinType<Subject, Apply<Type>>...
+    struct Apply : public ApplyMixin<Subject, Apply<Type>>::type...
     {
         Apply() = default;
 
         template<typename T>
         explicit Apply(const T& value)
-            : MixinType<Subject, Apply<Type>>(value)...
+            : ApplyMixin<Subject, Apply<Type>>::type(value)...
         {}
 
         template<typename T>
         void set(const T& value)
         {
-            doSet<T, MixinType<Subject, Apply<Type>>...>(value);
+            doSet<T, Subject...>(value);
         }
 
         template<typename T>
@@ -96,14 +112,14 @@ struct Mixin
         template<typename T, typename U1, typename U2, typename... U>
         void doSet(const T& value)
         {
-            static_cast<U1*>(this)->set(value);
+            doSet<T,U1>(value);
             doSet<T,U2,U...>(value);
         }
 
         template<typename T, typename U1>
         void doSet(const T& value)
         {
-            static_cast<U1*>(this)->set(value);
+            static_cast<typename ApplyMixin<U1, Apply<Type>>::type*>(this)->set(value);
         }
     };
 };

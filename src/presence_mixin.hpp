@@ -7,7 +7,6 @@
 
 namespace di {
 
-template<typename Type>
 struct Required
 {
     Required() = delete;
@@ -22,7 +21,6 @@ struct Required
     bool initialized() const { return true; }
 };
 
-template<typename Type>
 struct Optional
 {
     Optional() = default;

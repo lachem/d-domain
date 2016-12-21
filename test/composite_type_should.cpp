@@ -18,8 +18,8 @@ using namespace testing;
 
 namespace {
 
-template<typename T> struct NameTag {};
-template<typename T> struct PropertyTag {};
+struct NameTag {};
+struct PropertyTag {};
 
 TEST(CompositeTypeShould, provideAccessToUnderlyingTypes)
 {
@@ -58,8 +58,8 @@ struct Hashable
 
 TEST(CompositeTypeShould, supportUniversalMixins)
 {
-    using Name     = BasicType<std::string, NameTag, Hashable>;
-    using Property = BasicType<uint64_t, PropertyTag, Hashable>;
+    using Name     = BasicType<std::string, NameTag, Hashable<di::_>>;
+    using Property = BasicType<uint64_t, PropertyTag, Hashable<di::_>>;
     using NamedProperty = CompositeType<Name, Property>;
 
     NamedProperty property(Name("SomeName"), Property(2010));

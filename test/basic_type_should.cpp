@@ -14,7 +14,7 @@ using namespace testing;
 
 namespace {
 
-template<typename T> struct SomeTypeTag {};
+struct SomeTypeTag {};
 
 TEST(BasicTypeShould, beDefaultConstructibleByDefault)
 {
@@ -126,7 +126,6 @@ TEST(BasicTypeShould, handleMutableAndOptionalTogeather)
     EXPECT_TRUE(opt.initialized());
 }
 
-template<typename T>
 struct Name
 {
     static const char* name() { return "some name"; }
@@ -153,7 +152,7 @@ struct Prefix
 
 TEST(BasicTypeShould, supportValueBasedMixins)
 {
-    using OptSomeType = BasicType<std::string, Prefix>;
+    using OptSomeType = BasicType<std::string, Prefix<di::_>>;
 
     OptSomeType opt("prefix_text");
 
@@ -184,7 +183,7 @@ private:
 
 TEST(BasicTypeShould, supportCachedMixins)
 {
-    using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
+    using OptSomeType = BasicType<std::string, Required, CachedPrefix<di::_>>;
 
     OptSomeType opt("prefix_text");
     EXPECT_EQ("prefix_text", opt.get());
@@ -197,7 +196,7 @@ TEST(BasicTypeShould, supportCachedMixins)
 
 TEST(BasicTypeShould, AsignementOperator)
 {
-    using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
+    using OptSomeType = BasicType<std::string, Required, CachedPrefix<di::_>>;
 
     OptSomeType opt("prefix_text");
     EXPECT_EQ("prefix_text", opt.get());

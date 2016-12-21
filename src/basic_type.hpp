@@ -19,7 +19,7 @@
 
 namespace di {
 
-template<typename ValueType, template <typename> class... Policies>
+template<typename ValueType, typename... Policies>
 struct BasicType
     : private ValueContainer<ValueType>
     , public Mixin<Policies...>::template Apply<BasicType<ValueType, Policies...>>
