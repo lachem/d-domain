@@ -22,11 +22,11 @@ namespace di {
 template<typename ValueType, typename... Policies>
 struct BasicType
     : private ValueContainer<ValueType>
-    , public Mixin<Policies...>::template Apply<BasicType<ValueType, Policies...>>
+    , public MixinPolicy<BasicType<ValueType, Policies...>, Policies...>
 {
     using value_type = ValueType;
     using value_container = ValueContainer<ValueType>;
-    using mixin_policy = typename Mixin<Policies...>::template Apply<BasicType<ValueType, Policies...>>;
+    using mixin_policy = MixinPolicy<BasicType<ValueType, Policies...>, Policies...>;
 
     BasicType() = default;
     explicit BasicType(const value_type& val)

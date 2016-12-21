@@ -10,10 +10,6 @@
 #include <type_traits>
 
 namespace di {
-
-//placeholder
-struct _ {};
-
 namespace detail {
 
 template <typename C, typename F, typename = void>
@@ -29,8 +25,12 @@ struct is_set_available<C, R(A...),
 
 } // namespace detail
 
+
+//placeholder
+struct _ {};
+
 template<typename T>
-struct MixinType : public T
+struct Mixin : public T
 {
 private:
     template<typename U>
@@ -41,19 +41,19 @@ private:
 
 public:
     template<typename U>
-    explicit MixinType(U&& value, catch_constructible<U> = nullptr)
+    explicit Mixin(U&& value, catch_constructible<U> = nullptr)
         : T(std::forward<U>(value))
     {}
 
     template<typename U>
-    explicit MixinType(U&&, catch_non_constructible<U> = nullptr)
+    explicit Mixin(U&&, catch_non_constructible<U> = nullptr)
     {}
 
-    MixinType() = default;
-    MixinType(MixinType&&) = default;
-    MixinType(const MixinType&) = default;
-    MixinType& operator=(MixinType&&) = default;
-    MixinType& operator=(const MixinType&) = default;
+    Mixin() = default;
+    Mixin(Mixin&&) = default;
+    Mixin(const Mixin&) = default;
+    Mixin& operator=(Mixin&&) = default;
+    Mixin& operator=(const Mixin&) = default;
 
     template<typename U>
     void set(const U& value)
@@ -78,59 +78,54 @@ private:
 template<typename Subject, typename Base>
 struct ApplyMixin
 {
-    using type = MixinType<Subject>;
+    using type = Mixin<Subject>;
 };
 
 template<template <typename> class Subject, typename Base>
 struct ApplyMixin<Subject<_>, Base>
 {
-    using type = MixinType<Subject<Base>>;
+    using type = Mixin<Subject<Base>>;
 };
 
-template<class... Subject>
-struct Mixin
+template<typename Type, typename... Subject>
+struct MixinPolicy : public ApplyMixin<Subject, MixinPolicy<Type, Subject...>>::type...
 {
-    template<typename Type>
-    struct Apply : public ApplyMixin<Subject, Apply<Type>>::type...
+    template<typename T>
+    explicit MixinPolicy(const T& value)
+        : ApplyMixin<Subject, MixinPolicy>::type(value)...
+    {}
+
+    MixinPolicy() = default;
+    MixinPolicy(MixinPolicy&&) = default;
+    MixinPolicy(const MixinPolicy&) = default;
+    MixinPolicy& operator=(MixinPolicy&&) = default;
+    MixinPolicy& operator=(const MixinPolicy&) = default;
+
+    template<typename T>
+    void set(const T& value)
     {
-        template<typename T>
-        explicit Apply(const T& value)
-            : ApplyMixin<Subject, Apply<Type>>::type(value)...
-        {}
+        doSet<T, Subject...>(value);
+    }
 
-        Apply() = default;
-        Apply(Apply&&) = default;
-        Apply(const Apply&) = default;
+    template<typename T>
+    static Type* self(T* object) { return static_cast<Type*>(object); }
 
-        Apply& operator=(Apply&&) = default;
-        Apply& operator=(const Apply&) = default;
+    template<typename T>
+    static const Type* self(const T* object) { return static_cast<const Type*>(object); }
 
-        template<typename T>
-        void set(const T& value)
-        {
-            doSet<T, Subject...>(value);
-        }
+private:
+    template<typename T, typename U1, typename U2, typename... U>
+    void doSet(const T& value)
+    {
+        doSet<T,U1>(value);
+        doSet<T,U2,U...>(value);
+    }
 
-        template<typename T>
-        static Type* self(T* object) { return static_cast<Type*>(object); }
-
-        template<typename T>
-        static const Type* self(const T* object) { return static_cast<const Type*>(object); }
-
-    private:
-        template<typename T, typename U1, typename U2, typename... U>
-        void doSet(const T& value)
-        {
-            doSet<T,U1>(value);
-            doSet<T,U2,U...>(value);
-        }
-
-        template<typename T, typename U1>
-        void doSet(const T& value)
-        {
-            static_cast<typename ApplyMixin<U1, Apply<Type>>::type*>(this)->set(value);
-        }
-    };
+    template<typename T, typename U1>
+    void doSet(const T& value)
+    {
+        static_cast<typename ApplyMixin<U1, MixinPolicy>::type*>(this)->set(value);
+    }
 };
 
 } // namespace di
