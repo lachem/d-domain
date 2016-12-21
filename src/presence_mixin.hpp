@@ -17,7 +17,6 @@ struct Required
     template<typename T>
     void set(const T&) {}
 
-    bool empty() const { return false; }
     bool initialized() const { return true; }
 };
 
@@ -31,7 +30,6 @@ struct Optional
     template<typename T>
     void set(const T&) { init = true; }
 
-    bool empty() const { return !init; }
     bool initialized() const { return init; }
 
 private:

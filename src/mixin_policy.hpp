@@ -40,8 +40,6 @@ private:
     using catch_non_constructible = typename std::enable_if<!std::is_constructible<T, U>::value>::type*;
 
 public:
-    MixinType() = default;
-
     template<typename U>
     explicit MixinType(U&& value, catch_constructible<U> = nullptr)
         : T(std::forward<U>(value))
@@ -50,6 +48,12 @@ public:
     template<typename U>
     explicit MixinType(U&&, catch_non_constructible<U> = nullptr)
     {}
+
+    MixinType() = default;
+    MixinType(MixinType&&) = default;
+    MixinType(const MixinType&) = default;
+    MixinType& operator=(MixinType&&) = default;
+    MixinType& operator=(const MixinType&) = default;
 
     template<typename U>
     void set(const U& value)
@@ -89,12 +93,17 @@ struct Mixin
     template<typename Type>
     struct Apply : public ApplyMixin<Subject, Apply<Type>>::type...
     {
-        Apply() = default;
-
         template<typename T>
         explicit Apply(const T& value)
             : ApplyMixin<Subject, Apply<Type>>::type(value)...
         {}
+
+        Apply() = default;
+        Apply(Apply&&) = default;
+        Apply(const Apply&) = default;
+
+        Apply& operator=(Apply&&) = default;
+        Apply& operator=(const Apply&) = default;
 
         template<typename T>
         void set(const T& value)

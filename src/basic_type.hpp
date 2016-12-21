@@ -43,7 +43,7 @@ struct BasicType
 
     BasicType& operator=(BasicType&& rhs)
     {
-        mixin_policy::set(rhs.value_container::value);
+        mixin_policy::operator=(std::move(static_cast<mixin_policy&&>(rhs)));
         value_container::value = std::move(rhs.value_container::value);
 
         return *this;
@@ -53,7 +53,7 @@ struct BasicType
     {
         if (&rhs != this)
         {
-            mixin_policy::set(rhs.value_container::value);
+            mixin_policy::operator=(static_cast<const mixin_policy&>(rhs));
             value_container::value = rhs.value_container::value;
         }
 
