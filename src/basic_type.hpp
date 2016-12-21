@@ -8,8 +8,8 @@
 //local
 #include "value_container.hpp"
 #include "mixin_policy.hpp"
-#include "access_policy.hpp"
-#include "presence_policy.hpp"
+#include "access_mixin.hpp"
+#include "presence_mixin.hpp"
 
 //boost
 #include <boost/optional.hpp>
@@ -22,11 +22,11 @@ namespace di {
 template<typename ValueType, template <typename> class... Policies>
 struct BasicType
     : private ValueContainer<ValueType>
-    , public MixinPolicy<Policies...>::template Apply<BasicType<ValueType, Policies...>>
+    , public Mixin<Policies...>::template Apply<BasicType<ValueType, Policies...>>
 {
     using value_type = ValueType;
     using value_container = ValueContainer<ValueType>;
-    using mixin_policy = typename MixinPolicy<Policies...>::template Apply<BasicType<ValueType, Policies...>>;
+    using mixin_policy = typename Mixin<Policies...>::template Apply<BasicType<ValueType, Policies...>>;
 
     BasicType() = default;
     explicit BasicType(const value_type& val)
@@ -37,6 +37,28 @@ struct BasicType
         : value_container(std::move(val))
         , mixin_policy(value_container::value)
     {}
+
+    BasicType(BasicType&&) = default;
+    BasicType(const BasicType&) = default;
+
+    BasicType& operator=(BasicType&& rhs)
+    {
+        mixin_policy::set(rhs.value_container::value);
+        value_container::value = std::move(rhs.value_container::value);
+
+        return *this;
+    }
+
+    BasicType& operator=(const BasicType& rhs)
+    {
+        if (&rhs != this)
+        {
+            mixin_policy::set(rhs.value_container::value);
+            value_container::value = rhs.value_container::value;
+        }
+
+        return *this;
+    }
 
     template<typename T>
     void set(T&& val)

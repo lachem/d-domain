@@ -13,22 +13,20 @@ namespace di {
 namespace detail {
 
 template <typename C, typename F, typename = void>
-struct is_call_possible : public std::false_type {};
+struct is_set_available : public std::false_type {};
 
 template <typename C, typename R, typename... A>
-struct is_call_possible<C, R(A...),
+struct is_set_available<C, R(A...),
     typename std::enable_if<
         std::is_same<R, void>::value ||
-        std::is_convertible<decltype(
-            std::declval<C>().set(std::declval<A>()...)
-        ), R>::value
+        std::is_convertible<decltype(std::declval<C>().set(std::declval<A>()...)), R>::value
     >::type
 > : public std::true_type {};
 
 } // namespace detail
 
 template<template <typename> class T, typename Base>
-struct Mixin : public T<Base>
+struct MixinType : public T<Base>
 {
 private:
     template<typename U>
@@ -38,21 +36,21 @@ private:
     using catch_non_constructible = typename std::enable_if<!std::is_constructible<T<Base>, U>::value>::type*;
 
 public:
-    Mixin() = default;
+    MixinType() = default;
 
     template<typename U>
-    explicit Mixin(U&& value, catch_constructible<U> = nullptr)
+    explicit MixinType(U&& value, catch_constructible<U> = nullptr)
         : T<Base>(std::forward<U>(value))
     {}
 
     template<typename U>
-    explicit Mixin(U&&, catch_non_constructible<U> = nullptr)
+    explicit MixinType(U&&, catch_non_constructible<U> = nullptr)
     {}
 
     template<typename U>
     void set(const U& value)
     {
-        doSet(value, detail::is_call_possible<T<Base>, void(U)>());
+        doSet(value, detail::is_set_available<T<Base>, void(U)>());
     }
 
 private:
@@ -65,26 +63,27 @@ private:
     template<typename U>
     void doSet(const U&, std::false_type)
     {
+        // empty
     }
 };
 
 template<template <typename> class... Subject>
-struct MixinPolicy
+struct Mixin
 {
     template<typename Type>
-    struct Apply : public Mixin<Subject, Apply<Type>>...
+    struct Apply : public MixinType<Subject, Apply<Type>>...
     {
         Apply() = default;
 
         template<typename T>
         explicit Apply(const T& value)
-            : Mixin<Subject, Apply<Type>>(value)...
+            : MixinType<Subject, Apply<Type>>(value)...
         {}
 
         template<typename T>
         void set(const T& value)
         {
-            doSet<T, Mixin<Subject, Apply<Type>>...>(value);
+            doSet<T, MixinType<Subject, Apply<Type>>...>(value);
         }
 
         template<typename T>

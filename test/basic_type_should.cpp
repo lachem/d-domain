@@ -12,19 +12,11 @@
 using namespace di;
 using namespace testing;
 
-namespace
-{
+namespace {
 
-struct BasicTypeShould : Test
-{
-};
+template<typename T> struct SomeTypeTag {};
 
-template<typename T>
-struct SomeTypeTag
-{
-};
-
-TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
+TEST(BasicTypeShould, beDefaultConstructibleByDefault)
 {
     using SomeType = BasicType<int, SomeTypeTag>;
 
@@ -32,7 +24,7 @@ TEST_F(BasicTypeShould, beDefaultConstructibleByDefault)
 //    EXPECT_FALSE(instance.initialized());
 }
 
-TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
+TEST(BasicTypeShould, retrieveTheValueThatWasStoredAsOptional)
 {
     using SomeType = BasicType<int, Optional, SomeTypeTag>;
 
@@ -41,7 +33,7 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsOptional)
     EXPECT_TRUE(instance.initialized());
 }
 
-TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
+TEST(BasicTypeShould, retrieveTheValueThatWasStoredAsRequired)
 {
     using SomeType = BasicType<int, Required, SomeTypeTag>;
 
@@ -50,7 +42,17 @@ TEST_F(BasicTypeShould, retriveTheValueThatWasStoredAsRequired)
     EXPECT_TRUE(instance.initialized());
 }
 
-TEST_F(BasicTypeShould, beCopyConstructible)
+TEST(BasicTypeShould, correctlyPassOptionalState)
+{
+    using SomeType = BasicType<int, Optional, SomeTypeTag>;
+
+    SomeType instance(1);
+    SomeType instance2;
+    instance = instance2;
+    EXPECT_FALSE(instance.initialized());
+}
+
+TEST(BasicTypeShould, beCopyConstructible)
 {
     using OptSomeType = BasicType<int, Optional, SomeTypeTag>;
     using ReqSomeType = BasicType<int, Required, SomeTypeTag>;
@@ -68,7 +70,7 @@ TEST_F(BasicTypeShould, beCopyConstructible)
     EXPECT_EQ(41, req.get());
 }
 
-TEST_F(BasicTypeShould, beMovable)
+TEST(BasicTypeShould, beMovable)
 {
     using OptSomeType = BasicType<std::string, Optional>;
     using ReqSomeType = BasicType<std::string, Required>;
@@ -92,7 +94,7 @@ TEST_F(BasicTypeShould, beMovable)
     EXPECT_EQ("text4", req.get());
 }
 
-TEST_F(BasicTypeShould, beMutable)
+TEST(BasicTypeShould, beMutable)
 {
     using OptSomeType = BasicType<std::string, Optional>;
     using ReqSomeType = BasicType<std::string, Mutable, Required>;
@@ -113,7 +115,7 @@ TEST_F(BasicTypeShould, beMutable)
     EXPECT_EQ("text4", req.get());
 }
 
-TEST_F(BasicTypeShould, handleMutableAndOptionalTogeather)
+TEST(BasicTypeShould, handleMutableAndOptionalTogeather)
 {
     using OptSomeType = BasicType<std::string, Optional, Mutable>;
 
@@ -130,7 +132,7 @@ struct Name
     static const char* name() { return "some name"; }
 };
 
-TEST_F(BasicTypeShould, supportCustomMixins)
+TEST(BasicTypeShould, supportCustomMixins)
 {
     using OptSomeType = BasicType<std::string, Optional, Mutable, Name>;
 
@@ -149,7 +151,7 @@ struct Prefix
     }
 };
 
-TEST_F(BasicTypeShould, supportValueBasedMixins)
+TEST(BasicTypeShould, supportValueBasedMixins)
 {
     using OptSomeType = BasicType<std::string, Prefix>;
 
@@ -180,7 +182,7 @@ private:
     std::string value;
 };
 
-TEST_F(BasicTypeShould, supportCachedMixins)
+TEST(BasicTypeShould, supportCachedMixins)
 {
     using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
 
@@ -189,6 +191,20 @@ TEST_F(BasicTypeShould, supportCachedMixins)
     EXPECT_EQ("prefix", opt.prefix());
 
     opt.set("pref12_sth");
+    EXPECT_EQ("pref12_sth", opt.get());
+    EXPECT_EQ("pref12", opt.prefix());
+}
+
+TEST(BasicTypeShould, AsignementOperator)
+{
+    using OptSomeType = BasicType<std::string, Required, CachedPrefix>;
+
+    OptSomeType opt("prefix_text");
+    EXPECT_EQ("prefix_text", opt.get());
+    EXPECT_EQ("prefix", opt.prefix());
+
+    OptSomeType opt2("pref12_sth");
+    opt = opt2;
     EXPECT_EQ("pref12_sth", opt.get());
     EXPECT_EQ("pref12", opt.prefix());
 }
