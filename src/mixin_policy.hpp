@@ -5,6 +5,9 @@
 
 #pragma once
 
+//local
+#include "traits.hpp"
+
 //std
 #include <utility>
 #include <type_traits>
@@ -29,7 +32,7 @@ struct is_set_available<C, R(A...),
 //placeholder
 struct _ {};
 
-template<typename T>
+template<typename T, typename = void>
 struct Mixin : public T
 {
 private:
@@ -75,6 +78,24 @@ private:
     }
 };
 
+template<typename T>
+struct Mixin<T, typename std::enable_if<IsBasicType<T>::value || IsCompositeType<T>::value>::type>
+{
+    template<typename U>
+    explicit Mixin(U&&)
+    {
+        // empty
+    }
+
+    Mixin() = default;
+
+    template<typename U>
+    void set(U&&)
+    {
+        // empty
+    }
+};
+
 template<typename Subject, typename Base>
 struct ApplyMixin
 {
@@ -90,6 +111,9 @@ struct ApplyMixin<Subject<_>, Base>
 template<typename Type, typename... Subject>
 struct MixinPolicy : public ApplyMixin<Subject, MixinPolicy<Type, Subject...>>::type...
 {
+    using type = Type;
+    using self_type = Type;
+
     template<typename T>
     explicit MixinPolicy(const T& value)
         : ApplyMixin<Subject, MixinPolicy>::type(value)...

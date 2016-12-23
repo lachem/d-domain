@@ -5,7 +5,9 @@
 
 #pragma once
 
+//local
 #include "traits.hpp"
+#include "mixin_policy.hpp"
 
 //std
 #include <type_traits>
@@ -87,35 +89,12 @@ struct ValueType<T1>
     ValueType& operator=(const ValueType&) = default;
 };
 
-template<typename T, typename = void>
-struct MixinOf : public T
-{
-};
-
-template<typename T>
-struct MixinOf<T, typename std::enable_if<IsBasicType<T>::value || IsCompositeType<T>::value>::type>
-{
-};
-
-template<typename T1, typename... T>
-struct MixinType
-    : public MixinOf<T1>
-    , public MixinType<T...>
-{
-};
-
-template<typename T1>
-struct MixinType<T1>
-    : public MixinOf<T1>
-{
-};
-
 } // namespace detail
 
 template<typename... Types>
 struct CompositeType
     : private detail::ValueType<Types...>
-    , public detail::MixinType<Types...>
+    , public MixinPolicy<CompositeType<Types...>, Types...>
 {
     using tag = CompositeTypeTag;
 

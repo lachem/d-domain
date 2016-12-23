@@ -11,6 +11,7 @@
 #include <composite_type.hpp>
 
 //std
+#include <string>
 #include <functional>
 
 using namespace di;
@@ -47,12 +48,13 @@ TEST(CompositeTypeShould, allowModificationOfMutableElements)
     EXPECT_EQ(2010, property.get<Property>().get());
 }
 
+//------- StaticMixins -------
 template<typename T>
 struct BasicHash
 {
     size_t hash() const
     {
-       return std::hash<typename T::value_type>(T::self(this)->get());
+       return std::hash<typename T::type::value_type>()(T::self(this)->get());
     }
 };
 
@@ -65,7 +67,7 @@ struct CompositeHash
     }
 };
 
-TEST(CompositeTypeShould, supportUniversalMixins)
+TEST(CompositeTypeShould, supportStaticMixins)
 {
     using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
     using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
@@ -75,6 +77,31 @@ TEST(CompositeTypeShould, supportUniversalMixins)
     EXPECT_EQ("SomeName", property.get<Name>().get());
     EXPECT_EQ(2010, property.get<Property>().get());
     EXPECT_EQ(42, property.hash());
+}
+
+//------- DynamicMixins -------
+using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
+using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
+
+template<typename T>
+struct HashSum
+{
+    size_t hash() const
+    {
+        return T::self(this)->template get<Name>().hash()
+             + T::self(this)->template get<Property>().hash();
+    }
+};
+
+using NamedProperty = CompositeType<Name, HashSum<di::_>, Property>;
+
+TEST(CompositeTypeShould, supportDynamicMixins)
+{
+    Name name("SomeName");
+    Property property(2020);
+    NamedProperty namedProperty(name, property);
+
+    EXPECT_EQ(name.hash() + property.hash(), namedProperty.hash());
 }
 
 } // namespace
