@@ -91,15 +91,30 @@ struct HashSum
     }
 };
 
-using NamedProperty = CompositeType<Name, HashSum<di::_>, Property>;
-
 TEST(CompositeTypeShould, supportDynamicMixins)
 {
+    using NamedProperty = CompositeType<Name, HashSum<di::_>, Property>;
+
     Name name("SomeName");
     Property property(2020);
     NamedProperty namedProperty(name, property);
 
     EXPECT_EQ(name.hash() + property.hash(), namedProperty.hash());
+}
+
+//------------------------------
+TEST(CompositeTypeShould, supportMultiLevelHierarchies)
+{
+    using NamedProperty = CompositeType<Name, HashSum<di::_>, Property>;
+    using MultiLevel = CompositeType<NamedProperty, Property>;
+
+    MultiLevel multi(
+        NamedProperty(
+            Name("SomeName"), Property(2020)),
+        Property(42));
+    EXPECT_EQ("SomeName", multi.get<NamedProperty>().get<Name>().get());
+    EXPECT_EQ(2020, multi.get<NamedProperty>().get<Property>().get());
+    EXPECT_EQ(42, multi.get<Property>().get());
 }
 
 } // namespace
