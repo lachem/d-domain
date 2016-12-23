@@ -9,6 +9,7 @@
 #include "mixin_policy.hpp"
 #include "access_mixin.hpp"
 #include "presence_mixin.hpp"
+#include "traits.hpp"
 
 //boost
 #include <boost/optional.hpp>
@@ -35,6 +36,7 @@ struct BasicType
     : private detail::ValueContainer<ValueType>
     , public MixinPolicy<BasicType<ValueType, Policies...>, Policies...>
 {
+    using tag = BasicTypeTag;
     using value_type = ValueType;
     using value_container = detail::ValueContainer<ValueType>;
     using mixin_policy = MixinPolicy<BasicType<ValueType, Policies...>, Policies...>;
