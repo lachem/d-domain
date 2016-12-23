@@ -69,12 +69,12 @@ TEST(CompositeTypeShould, supportUniversalMixins)
 {
     using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
     using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
-    using NamedProperty = CompositeType<Name, Property, CompositeHash<di::_>>;
+    using NamedProperty = CompositeType<Name, CompositeHash<di::_>, Property>;
 
     NamedProperty property(Name("SomeName"), Property(2010));
     EXPECT_EQ("SomeName", property.get<Name>().get());
     EXPECT_EQ(2010, property.get<Property>().get());
-    //EXPECT_EQ(42, property.hash());
+    EXPECT_EQ(42, property.hash());
 }
 
 } // namespace
