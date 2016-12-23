@@ -48,7 +48,6 @@ TEST(CompositeTypeShould, allowModificationOfMutableElements)
     EXPECT_EQ(2010, property.get<Property>().get());
 }
 
-//------- StaticMixins -------
 template<typename T>
 struct BasicHash
 {
@@ -58,8 +57,12 @@ struct BasicHash
     }
 };
 
+using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
+using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
+
+//------- Static Mixins -------
 template<typename T>
-struct CompositeHash
+struct FixedHash
 {
     size_t hash() const
     {
@@ -69,9 +72,7 @@ struct CompositeHash
 
 TEST(CompositeTypeShould, supportStaticMixins)
 {
-    using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
-    using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
-    using NamedProperty = CompositeType<Name, CompositeHash<di::_>, Property>;
+    using NamedProperty = CompositeType<Name, FixedHash<di::_>, Property>;
 
     NamedProperty property(Name("SomeName"), Property(2010));
     EXPECT_EQ("SomeName", property.get<Name>().get());
@@ -79,10 +80,7 @@ TEST(CompositeTypeShould, supportStaticMixins)
     EXPECT_EQ(42, property.hash());
 }
 
-//------- DynamicMixins -------
-using Name     = BasicType<std::string, NameTag, BasicHash<di::_>>;
-using Property = BasicType<uint64_t, PropertyTag, BasicHash<di::_>>;
-
+//------- Dynamic Mixins -------
 template<typename T>
 struct HashSum
 {
