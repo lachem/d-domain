@@ -109,14 +109,14 @@ struct ApplyMixin<Subject<_>, Base>
 };
 
 template<typename Type, typename... Subject>
-struct MixinPolicy : public ApplyMixin<Subject, MixinPolicy<Type, Subject...>>::type...
+struct MixinPolicy : public ApplyMixin<Subject, Type>::type...
 {
     using type = Type;
     using self_type = Type;
 
     template<typename T>
     explicit MixinPolicy(const T& value)
-        : ApplyMixin<Subject, MixinPolicy>::type(value)...
+        : ApplyMixin<Subject, Type>::type(value)...
     {}
 
     MixinPolicy() = default;
@@ -131,12 +131,6 @@ struct MixinPolicy : public ApplyMixin<Subject, MixinPolicy<Type, Subject...>>::
         doSet<T, Subject...>(value);
     }
 
-    template<typename T>
-    static Type* self(T* object) { return static_cast<Type*>(object); }
-
-    template<typename T>
-    static const Type* self(const T* object) { return static_cast<const Type*>(object); }
-
 private:
     template<typename T, typename U1, typename U2, typename... U>
     void doSet(const T& value)
@@ -148,7 +142,7 @@ private:
     template<typename T, typename U1>
     void doSet(const T& value)
     {
-        static_cast<typename ApplyMixin<U1, MixinPolicy>::type*>(this)->set(value);
+        static_cast<typename ApplyMixin<U1, Type>::type*>(this)->set(value);
     }
 };
 

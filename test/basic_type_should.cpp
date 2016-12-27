@@ -146,7 +146,7 @@ struct Prefix
 {
     std::string prefix() const
     {
-        return T::self(this)->get().substr(0,6);
+        return static_cast<const T*>(this)->get().substr(0,6);
     }
 };
 

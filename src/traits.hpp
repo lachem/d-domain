@@ -18,7 +18,7 @@ namespace detail {
 template<typename T>
 struct void_
 {
-  typedef void type;
+    typedef void type;
 };
 
 } // namespace detail

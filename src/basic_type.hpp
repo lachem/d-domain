@@ -61,7 +61,6 @@ struct BasicType
 
         return *this;
     }
-
     BasicType& operator=(const BasicType& rhs)
     {
         if (&rhs != this)
@@ -83,6 +82,12 @@ struct BasicType
     const value_type& get() const
     {
         return value_container::value;
+    }
+
+    template<typename F>
+    void accept(const F& func) const
+    {
+        func(*this);
     }
 };
 
