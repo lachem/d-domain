@@ -33,20 +33,29 @@ message(STATUS "Cache line size: ${HOOLA_CACHE_LINE_SIZE}")
 
 find_package(Boost 1.48 REQUIRED program_options)
 
-set(GMOCK_INCLUDE_DIRS "$ENV{GMOCK_ROOT}/include")
-set(GMOCK_LIBRARY "$ENV{GMOCK_ROOT}/lib/libgmock.so")
+if(DEFINED ENV{GMOCK_ROOT})
+    set(GMOCK_ROOT "$ENV{GMOCK_ROOT}")
+else()
+    set(GMOCK_ROOT "/usr")
+endif()
+
+message(STATUS "Using gmock root: ${GMOCK_ROOT}")
+
+set(GMOCK_INCLUDE_DIRS "${GMOCK_ROOT}/include")
+set(GMOCK_LIBRARY "${GMOCK_ROOT}/lib/libgmock.a")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
 
 #########################
 # Common compiler flags #
 #########################
 add_definitions(-Werror -Wall -Wextra -pedantic)
 if (CMAKE_BUILD_TYPE MATCHES Release)
-    add_definitions(-std=c++11 -O2)
+    add_definitions(-std=c++14 -O2)
 elseif (CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-std=c++11 -g -O0 -fno-inline)
+    add_definitions(-std=c++14 -g -O0 -fno-inline)
 endif()
 add_definitions(-DHOOLA_CACHE_LINE_SIZE=${HOOLA_CACHE_LINE_SIZE})
 
@@ -70,17 +79,18 @@ include_directories(
     src
     test
 )
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE TESTS test/*.cpp)
 
-add_executable(test
-    ${SOURCES}
-    ${TESTS}
+file(GLOB_RECURSE UNITS test/*.cpp)
+file(GLOB TESTF test/*.cpp)
+
+add_executable(unit
+    ${TESTF}
+    ${UNITS}
 )
 
-target_link_libraries(test
-    pthread
+target_link_libraries(unit
     ${Boost_LIBRARIES}
     ${GMOCK_LIBRARY}
+    pthread
 )
 

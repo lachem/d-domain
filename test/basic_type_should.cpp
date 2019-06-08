@@ -8,6 +8,7 @@
 
 // ddomain
 #include <basic_type.hpp>
+#include <name_mixin.hpp>
 
 using namespace di;
 using namespace testing;
@@ -126,19 +127,14 @@ TEST(BasicTypeShould, handleMutableAndOptionalTogeather)
     EXPECT_TRUE(opt.initialized());
 }
 
-struct Name
-{
-    static const char* name() { return "some name"; }
-};
-
 TEST(BasicTypeShould, supportCustomMixins)
 {
-    using OptSomeType = BasicType<std::string, Optional, Mutable, Name>;
+    using OptSomeType = BasicType<std::string, Optional, Mutable, decltype("some_name"_name)>;
 
     OptSomeType opt("text1");
 
     EXPECT_EQ("text1", opt.get());
-    EXPECT_STREQ("some name", opt.name());
+    EXPECT_STREQ("some_name", opt.name());
 }
 
 template<typename T>
