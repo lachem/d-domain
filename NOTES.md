@@ -94,3 +94,37 @@ int main() {
     return 0;
 }
 ```
+
+# Cheap member detection mechanism
+```cpp
+#include <iostream>
+#include <string>
+#include <utility>
+
+struct TypeWithAlias
+{
+	using type = int;
+};
+
+struct TypeNoAlias 
+{
+};
+
+template<typename T>
+auto has_type(T) -> decltype(typename T::type{})
+{
+	return {};
+}
+
+auto has_type(...) -> std::string
+{
+	return "fallback";
+}
+
+int main() 
+{
+	std::cout << "int: " << has_type(TypeWithAlias{}) << std::endl;
+	std::cout << "string: " << has_type(TypeNoAlias{}) << std::endl;
+	return 0;
+}
+```
